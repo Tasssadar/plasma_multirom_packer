@@ -2,7 +2,7 @@
 INITRD="initrd.img-ubuntu"
 ROOT_DEST="zip_root/rom"
 ZIP_ROOT="zip_root"
-ZIP_DEST="plasma.zip"
+ZIP_DEST="plasma_"
 
 function echo_b {
     echo -e "\e[01;34m$1\e[00m"
@@ -85,7 +85,11 @@ tar --numeric-owner -zpcf ../"$ROOT_DEST"/root.tar.gz ./* || fail "Failed to com
 
 echo_b "Packing installation zip..."
 cd "../$ZIP_ROOT" || fail "Failed to cd into ZIP\'s root!"
-rm "$ZIP_DEST"
-zip -0 -r ../$ZIP_DEST ./* || fail "Failed to create final ZIP!"
+
+zip_name="../${ZIP_DEST}$(date +%Y%m%d).zip"
+if [ -r $zip_name ]; then
+    rm $zip_name
+fi
+zip -0 -r $zip_name ./* || fail "Failed to create final ZIP!"
 
 echo_b "Success!"
