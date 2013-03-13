@@ -58,7 +58,13 @@ if [ "$skip_to_pack" == "0" ] ; then
     cd root
 
     echo_b "Downloading image..."
-    curl -L $img_addr | tar --numeric-owner -xj || fail "Failed to download the image!"
+    if [[ $img_addr == *tar.gz ]] ; then
+        curl -L $img_addr | tar --numeric-owner -xz || fail "Failed to download the image!"
+    elif [[ $img_addr == *tar.bz2 ]] ; then
+        curl -L $img_addr | tar --numeric-owner -xj || fail "Failed to download the image!"
+    else
+        fail "Unknown image compression!"
+    fi
 else
     cd root
 fi
