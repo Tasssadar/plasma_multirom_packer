@@ -86,7 +86,7 @@ tar --numeric-owner -zpcf ../"$ROOT_DEST"/root.tar.gz ./* || fail "Failed to com
 echo_b "Packing installation zip..."
 cd "../$ZIP_ROOT" || fail "Failed to cd into ZIP\'s root!"
 
-zip_name="../${ZIP_DEST}$(date +%Y%m%d).zip"
+zip_name="../${ZIP_DEST}$(date +%Y%m%d).mrom"
 if [ -r $zip_name ]; then
     rm $zip_name
 fi
