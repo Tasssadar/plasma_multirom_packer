@@ -1,6 +1,5 @@
 #!/bin/bash
-INITRD="initrd.img-ubuntu"
-ROOT_DEST="zip_root/rom"
+ROOT_DEST="zip_root/rom/root.tar.gz"
 ZIP_ROOT="zip_root"
 ZIP_DEST="plasma_"
 
@@ -38,8 +37,7 @@ for i in $* ; do
             ;;
         --clean)
             echo_b "Cleaning working folder..."
-            rm -r root
-            rm "$ROOT_DEST"/root.tar.gz
+            rm "$ROOT_DEST"
             exit 0
     esac
 done
@@ -50,41 +48,23 @@ if [ "$skip_to_pack" == "0" ] ; then
         exit 1
     fi
 
-    if [ -d "root" ]; then 
-        echo_b "Removing old root folder..."
-        rm -rf root || fail "Failed to remove old root folder!"
+    if [ -e "$ROOT_DEST" ]; then 
+        echo_b "Removing old root.tar.gz..."
+        rm -f "$ROOT_DEST" || fail "Failed to remove old root.tar.gz!"
     fi
-    mkdir root
-    cd root
 
     echo_b "Downloading image..."
     if [[ $img_addr == *tar.gz ]] ; then
-        curl -L $img_addr | tar --numeric-owner -xz || fail "Failed to download the image!"
+        curl -L $img_addr > "$ROOT_DEST" || fail "Failed to download the image!"
     elif [[ $img_addr == *tar.bz2 ]] ; then
-        curl -L $img_addr | tar --numeric-owner -xj || fail "Failed to download the image!"
+        curl -L $img_addr | bzip2 -d | gzip > "$ROOT_DEST" || fail "Failed to download the image!"
     else
         fail "Unknown image compression!"
     fi
-else
-    cd root
 fi
-
-echo_b "Copying ubuntu initrd..."
-cp ../"$INITRD" boot/ || fail "Failed to copy initrd!"
-chown root:root boot/"$INITRD"
-chmod 755 boot/"$INITRD"
-
-echo_b "Removing fstab root mount..."
-echo -e "$(cat etc/fstab | grep -v '/dev/root')" > etc/fstab
-
-echo_b "Compressing the root..."
-if [ -e ../"$ROOT_DEST"/root.tar.gz ] ; then
-    rm ../"$ROOT_DEST"/root.tar.gz || fail "Failed to remove old root.tar.gz!"
-fi
-tar --numeric-owner -zpcf ../"$ROOT_DEST"/root.tar.gz ./* || fail "Failed to compress the root!"
 
 echo_b "Packing installation zip..."
-cd "../$ZIP_ROOT" || fail "Failed to cd into ZIP\'s root!"
+cd "$ZIP_ROOT" || fail "Failed to cd into ZIP\'s root!"
 
 zip_name="../${ZIP_DEST}$(date +%Y%m%d).mrom"
 if [ -r $zip_name ]; then
